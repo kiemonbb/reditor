@@ -8,6 +8,7 @@ use std::io::{stdout, Write};
 #[derive(Debug)]
 pub struct Terminal {}
 
+#[derive(Debug)]
 pub struct Size {
     pub width: u16,
     pub height: u16,
