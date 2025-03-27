@@ -1,5 +1,6 @@
 use crate::terminal::{Terminal,Size};
 use crate::editor::Editor;
+use crate::terminal::Position;
 pub struct View;
 
 impl View {
@@ -16,21 +17,20 @@ impl View {
 
     pub fn refresh(editor:&Editor) -> Result<(), std::io::Error> {
         Terminal::hide_cursor()?;
-        Terminal::move_cursor(0, 0)?;
-        if !editor.is_running {
-            Terminal::clear_screen()?;
-        } else {
+        Terminal::move_cursor(&Position::default())?;
+        Terminal::clear_screen()?;
+        if editor.is_running {
             View::draw_tildes(&editor.size)?;
             View::draw_welcome(&editor.size)?;
         }
-        Terminal::move_cursor(0, 0)?;
+        Terminal::move_cursor(&editor.cursor)?;
         Terminal::show_cursor()?;
         Terminal::flush()?;
         Ok(())
     }
 
     fn draw_welcome(size:&Size) -> Result<(), std::io::Error> {
-        Terminal::move_cursor((size.width / 2 - 4) as u16, (size.height / 3) as u16)?;
+        Terminal::move_cursor(&Position {x:(size.width / 2 - 4) as u16, y: (size.height / 3) as u16} )?;
         Terminal::print("Welcome!")?;
         Ok(())
     }
