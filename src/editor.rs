@@ -2,25 +2,32 @@ use crossterm::event::KeyCode::{self, Char};
 use crossterm::event::{read, Event::Key};
 use crossterm::event::{Event, KeyEvent, KeyModifiers};
 use std::cmp;
+use std::io::Error;
 
+
+use crate::buffer::Buffer;
 use crate::terminal::Position;
 use crate::terminal::{Size, Terminal};
 use crate::view::View;
 
 pub struct Editor {
+    pub buffer: Buffer,
     pub is_running: bool,
     pub size: Size,
     pub cursor: Position,
 }
 
 impl Editor {
-    pub fn new() -> Result<Self, std::io::Error> {
+    pub fn new() -> Result<Self, Error> {
         let size = Terminal::size()?;
-        let cursor = Position { x: 0, y: 0 };
+        let cursor = Position::default();
+        let buffer = Buffer::default();
         Ok(Editor {
             is_running: true,
             size,
             cursor,
+            buffer,
+            
         })
     }
 
@@ -30,7 +37,7 @@ impl Editor {
         Terminal::terminate().unwrap();
     }
 
-    fn read_loop(&mut self) -> Result<(), std::io::Error> {
+    fn read_loop(&mut self) -> Result<(), Error> {
         loop {
             View::refresh(&self)?;
             if !self.is_running {
@@ -41,8 +48,8 @@ impl Editor {
         }
         Ok(())
     }
-
-    fn handle_event(&mut self, event: &Event) -> Result<(),std::io::Error> {
+//TODO split handle_event function into smaller ones
+    fn handle_event(&mut self, event: &Event) -> Result<(),Error> {
         if let Key(KeyEvent {
             code, modifiers, ..
         }) = event
@@ -50,7 +57,6 @@ impl Editor {
             match code {
                 Char('q') if *modifiers == KeyModifiers::CONTROL => {
                     self.is_running = false;
-                    
                 }
                 KeyCode::Down => {
                     let size = Terminal::size()?;
